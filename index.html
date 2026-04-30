@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>山河无恙 · 天涯明月刀手游 · 经典服帮派招人</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei','PingFang SC','Helvetica Neue','STKaiti',serif;
+            background: #0b0b1a;
+            color: #e0d8c8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* ===== 水墨粒子背景 ===== */
+        #inkCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        /* ===== 星空画布（保留） ===== */
+        #starfield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+        .container { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .banner { text-align: center; padding: 60px 20px 40px; position: relative; }
+
+        /* ===== 中式花纹装饰 ===== */
+        .banner::before {
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 80%; height: 2px;
+            background: linear-gradient(90deg, transparent, #d4af37, #f0e68c, #d4af37, transparent);
+        }
+        .banner::after {
+            content: '❀'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            font-size: 1.2em; color: #d4af37; opacity: 0.6;
+        }
+
+        .banner .server-badge {
+            display: inline-block; padding: 6px 20px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05));
+            border: 1px solid #d4af37; border-radius: 20px;
+            font-size: 0.95em; color: #f0e68c; letter-spacing: 3px; margin-bottom: 12px;
+        }
+        .banner h1 {
+            font-size: 3.2em; color: #f0e68c;
+            text-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 60px rgba(212,175,55,0.2);
+            letter-spacing: 8px; margin-bottom: 8px;
+            animation: glowPulse 3s ease-in-out infinite;
+            font-family: 'STKaiti','KaiTi','楷体',serif;
+        }
+        .banner .subtitle {
+            font-size: 1.1em; color: #a09070; letter-spacing: 12px;
+            border-top: 1px solid rgba(212,175,55,0.3); padding-top: 12px; display: inline-block;
+        }
+        .banner .version-tag {
+            display: inline-block; margin-top: 12px; padding: 4px 16px;
+            background: rgba(244,164,96,0.1); border: 1px solid rgba(244,164,96,0.3);
+            border-radius: 20px; font-size: 0.85em; color: #f4a460; letter-spacing: 2px;
+        }
+        @keyframes glowPulse {
+            0%,100% { text-shadow: 0 0 20px rgba(212,175,55,0.5),0 0 60px rgba(212,175,55,0.2); }
+            50% { text-shadow: 0 0 30px rgba(212,175,55,0.8),0 0 80px rgba(212,175,55,0.4),0 0 120px rgba(212,175,55,0.1); }
+        }
+        /* ===== 中式卡片边框 ===== */
+        .card {
+            background: linear-gradient(135deg, rgba(20,18,40,0.95), rgba(10,8,25,0.95));
+            border: 1px solid rgba(212,175,55,0.25); border-radius: 16px; padding: 30px 35px;
+            margin-bottom: 24px; backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(212,175,55,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .card::before {
+            content: '◆'; position: absolute; top: -8px; left: 20px;
+            color: #d4af37; font-size: 0.8em; opacity: 0.4;
+        }
+        .card::after {
+            content: '◆'; position: absolute; top: -8px; right: 20px;
+            color: #d4af37; font-size: 0.8em; opacity: 0.4;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(212,175,55,0.15); }
+        .card-title {
+            font-size: 1.3em; color: #d4af37; margin-bottom: 18px;
+            padding-bottom: 10px; border-bottom: 1px solid rgba(212,175,55,0.2);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .card-title .icon { font-size: 1.2em; }
+        .guild-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .guild-item {
+            background: rgba(212,175,55,0.06); border-radius: 10px; padding: 16px;
+            text-align: center; border: 1px solid rgba(212,175,55,0.1);
+            position: relative; overflow: hidden;
+        }
+        .guild-item::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 2px; background: linear-gradient(90deg, transparent, #d4af37, transparent);
+            opacity: 0.3;
+        }
+        .guild-item .label { font-size: 0.8em; color: #8a7a5a; letter-spacing: 2px; margin-bottom: 6px; }
+        .guild-item .value { font-size: 1.15em; color: #f0e68c; font-weight: bold; }
+        .guild-item .value.svr-badge { color: #f4a460; font-size: 1.05em; }
+        .guild-item .value.highlight { color: #ff6b6b; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .requirements { list-style: none; padding: 0; }
+        .requirements li {
+            padding: 12px 16px; margin-bottom: 8px; background: rgba(212,175,55,0.04);
+            border-left: 3px solid #d4af37; border-radius: 6px;
+            display: flex; align-items: flex-start; gap: 12px; transition: background 0.3s ease;
+        }
+        .requirements li:hover { background: rgba(212,175,55,0.08); }
+        .requirements li .check { color: #4ecdc4; font-weight: bold; flex-shrink: 0; margin-top: 2px; }
+        .activity-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+        .activity-tags .tag {
+            padding: 6px 14px; background: rgba(212,175,55,0.08);
+            border: 1px solid rgba(212,175,55,0.2); border-radius: 20px;
+            font-size: 0.85em; color: #d4af37; transition: all 0.3s ease;
+        }
+        .activity-tags .tag:hover { background: rgba(212,175,55,0.15); transform: translateY(-1px); }
+        .contact-list { display: flex; flex-wrap: wrap; gap: 16px; }
+        .contact-item {
+            flex: 1; min-width: 180px; background: rgba(212,175,55,0.06);
+            border-radius: 10px; padding: 16px 20px; border: 1px solid rgba(212,175,55,0.1);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .contact-item .emoji { font-size: 1.8em; }
+        .contact-item .info { display: flex; flex-direction: column; }
+        .contact-item .info .type { font-size: 0.75em; color: #8a7a5a; letter-spacing: 1px; }
+        .contact-item .info .detail { font-size: 1.05em; color: #e0d8c8; font-weight: bold; }
+        .manifesto { font-size: 1.05em; line-height: 2; color: #c8b898; text-align: center; padding: 10px 0; font-style: italic; }
+        .manifesto .highlight-text { color: #d4af37; font-style: normal; font-weight: bold; }
+        /* ===== 音乐播放按钮 ===== */
+        .music-btn {
+            position: fixed; bottom: 30px; right: 30px; z-index: 10;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05));
+            border: 1px solid rgba(212,175,55,0.3); color: #d4af37;
+            font-size: 1.3em; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px); transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        .music-btn:hover { background: linear-gradient(135deg, rgba(212,175,55,0.3), rgba(212,175,55,0.1)); transform: scale(1.1); }
+        .music-btn.playing { animation: musicPulse 2s ease-in-out infinite; border-color: #4ecdc4; color: #4ecdc4; }
+        @keyframes musicPulse { 0%,100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 20px rgba(78,205,196,0.2); } 50% { box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 40px rgba(78,205,196,0.4); } }
+        .floating-swords { position: fixed; pointer-events: none; z-index: 0; opacity: 0.06; font-size: 12em; user-select: none; }
+        .floating-swords.top-right { top: -60px; right: -40px; transform: rotate(25deg); }
+        .floating-swords.bottom-left { bottom: -80px; left: -50px; transform: rotate(-15deg); }
+        .footer { text-align: center; padding: 30px 0 20px; color: #5a4a3a; font-size: 0.85em; border-top: 1px solid rgba(212,175,55,0.1); margin-top: 20px; }
+        .footer .server-info { color: #8a7a5a; margin-top: 6px; }
+        .stat-bar { margin-top: 12px; }
+        .stat-bar .bar-label { display: flex; justify-content: space-between; font-size: 0.85em; color: #8a7a5a; margin-bottom: 4px; }
+        .stat-bar .bar-track { height: 8px; background: rgba(212,175,55,0.1); border-radius: 4px; overflow: hidden; }
+        .stat-bar .bar-fill { height: 100%; background: linear-gradient(90deg, #d4af37, #f0e68c); border-radius: 4px; transition: width 1s ease; width: 0%; }
+        /* ===== 墨滴 ===== */
+        .ink-dot {
+            position: fixed; pointer-events: none; z-index: 0;
+            border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.03), transparent);
+            animation: inkFloat 20s ease-in-out infinite;
+        }
+        @keyframes inkFloat {
+            0%,100% { transform: translate(0,0) scale(1); opacity: 0.3; }
+            25% { transform: translate(30px,-20px) scale(1.1); opacity: 0.5; }
+            50% { transform: translate(-20px,30px) scale(0.9); opacity: 0.2; }
+            75% { transform: translate(20px,20px) scale(1.05); opacity: 0.4; }
+        }
+        @media (max-width: 768px) {
+            .banner h1 { font-size: 2.2em; letter-spacing: 4px; }
+            .banner .subtitle { font-size: 0.9em; letter-spacing: 6px; }
+            .card { padding: 20px; }
+            .guild-grid { grid-template-columns: repeat(2,1fr); }
+            .contact-list { flex-direction: column; }
+            .floating-swords { display: none; }
+            .music-btn { bottom: 20px; right: 20px; width: 44px; height: 44px; font-size: 1.1em; }
+        }
+        @media (max-width: 480px) {
+            .banner h1 { font-size: 1.7em; }
+            .guild-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== 水墨晕染装饰 ===== -->
+<div class="ink-dot" style="width:400px;height:400px;top:-100px;right:-100px;animation-delay:0s;"></div>
+<div class="ink-dot" style="width:300px;height:300px;bottom:-50px;left:-80px;animation-delay:-5s;"></div>
+<div class="ink-dot" style="width:250px;height:250px;top:40%;left:60%;animation-delay:-10s;"></div>
+<div class="ink-dot" style="width:350px;height:350px;top:60%;left:10%;animation-delay:-15s;"></div>
+
+<canvas id="starfield"></canvas>
+<div class="floating-swords top-right">⚔️</div>
+<div class="floating-swords bottom-left">⚔️</div>
+
+<!-- ===== 音乐播放按钮 ===== -->
+<button class="music-btn" id="musicBtn" title="点击播放/暂停 · 明月天涯">🎵</button>
+
+<!-- ===== 音频（隐藏） ===== -->
+<audio id="bgMusic" loop preload="none">
+    <source src="https://music.163.com/song/media/outer/url?id=489184964.mp3" type="audio/mpeg">
+</audio>
+
+<div class="container">
+    <header class="banner">
+        <div class="server-badge">🏛 经 典 服</div>
+        <h1>山河无恙</h1>
+        <div class="subtitle">✦ 天 涯 明 月 刀 手 游 · 帮 派 招 募 ✦</div>
+        <div class="version-tag">📌 经典服 · 长生剑 · 养成保留</div>
+    </header>
+
+    <section class="card">
+        <div class="card-title"><span class="icon">🏯</span> 帮派概况</div>
+        <div class="guild-grid">
+            <div class="guild-item">
+                <div class="label">帮派名称</div>
+                <div class="value">山河无恙</div>
+            </div>
+            <div class="guild-item">
+                <div class="label">服务器</div>
+                <div class="value svr-badge">长生剑 · 经典服</div>
+            </div>
+            <div class="guild-item">
+                <div class="label">帮派等级</div>
+                <div class="value">Lv.15</div>
+            </div>
+            <div class="guild-item">
+                <div class="label">当前人数</div>
+                <div class="value">110 / 120</div>
+            </div>
+            <div class="guild-item">
+                <div class="label">活跃时间</div>
+                <div class="value">19:00 - 23:00</div>
+            </div>
+            <div class="guild-item">
+                <div class="label">招募状态</div>
+                <div class="value highlight">🔥 火热招募中</div>
+            </div>
+        </div>
+        <div class="stat-bar">
+            <div class="bar-label"><span>帮派活跃度</span><span id="guildPercent">92%</span></div>
+            <div class="bar-track"><div class="bar-fill" id="guildBar" style="width:92%"></div></div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-title"><span class="icon">📜</span> 招募要求</div>
+        <ul class="requirements">
+            <li><span class="check">✓</span><span><strong>功力要求：</strong>功力 ≥ <strong>25 万</strong></span></li>
+            <li><span class="check">✓</span><span><strong>活跃要求：</strong>每周上线 ≥4 天，帮派任务和活动积极参与</span></li>
+            <li><span class="check">✓</span><span><strong>帮派活动：</strong>帮派战、世界 Boss、茶话会积极参加</span></li>
+            <li><span class="check">✓</span><span><strong>副本态度：</strong>愿意一起打话本，不会打帮里老人可带</span></li>
+            <li><span class="check">✓</span><span><strong>心态要求：</strong>不暴躁、不引战、团结友爱、互帮互助</span></li>
+            <li><span class="check">✓</span><span><strong>特别说明：</strong>欢迎回归玩家和萌新！帮里氛围好，老玩家热心带本！</span></li>
+        </ul>
+    </section>
+
+    <section class="card">
+        <div class="card-title"><span class="icon">📅</span> 日常活动安排</div>
+        <div class="activity-tags">
+            <span class="tag">每日 · 日常一条龙</span>
+            <span class="tag">每日 · 茶话会 20:00</span>
+            <span class="tag">每周 · 帮派战</span>
+            <span class="tag">每周 · 世界 Boss</span>
+            <span class="tag">每周 · 枭野决战</span>
+            <span class="tag">周末 · 话本开荒车</span>
+            <span class="tag">每日 · 随机副本</span>
+            <span class="tag">不定期 · 帮派合影</span>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-title"><span class="icon">🌸</span> 帮派宣言</div>
+        <div class="manifesto">
+            " 江湖路远，<span class="highlight-text">山河无恙</span>。<br>
+            愿与君携手，共赴天涯明月。<br>
+            不论功力高低，只求 <span class="highlight-text">意气相投</span>。<br>
+            此间有酒有肉有兄弟，只差一个你。"
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-title"><span class="icon">💬</span> 联系方式</div>
+        <div class="contact-list">
+            <div class="contact-item">
+                <span class="emoji">👤</span>
+                <div class="info"><span class="type">帮主</span><span class="detail">太黑A</span></div>
+            </div>
+            <div class="contact-item">
+                <span class="emoji">📱</span>
+                <div class="info">
+                    <span class="type">QQ</span>
+                    <span class="detail" id="qqDisplay">123456789</span>
+                    <button class="copy-btn" data-copy="123456789" style="margin-top:4px;padding:2px 10px;border:1px solid rgba(212,175,55,0.3);border-radius:4px;background:transparent;color:#d4af37;cursor:pointer;font-size:0.75em;transition:all 0.2s;">复制</button>
+                </div>
+            </div>
+            <div class="contact-item">
+                <span class="emoji">💬</span>
+                <div class="info">
+                    <span class="type">帮派 Q 群</span>
+                    <span class="detail" id="groupDisplay">87654321</span>
+                    <button class="copy-btn" data-copy="87654321" style="margin-top:4px;padding:2px 10px;border:1px solid rgba(212,175,55,0.3);border-radius:4px;background:transparent;color:#d4af37;cursor:pointer;font-size:0.75em;transition:all 0.2s;">复制</button>
+                </div>
+            </div>
+            <div class="contact-item">
+                <span class="emoji">🔍</span>
+                <div class="info"><span class="type">游戏内搜索</span><span class="detail">搜索「山河无恙」申请</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-title"><span class="icon">✉️</span> 快速预申请</div>
+        <form id="applyForm">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <input type="text" id="playerName" placeholder="你的游戏昵称" required
+                    style="padding:12px 16px;border-radius:8px;border:1px solid rgba(212,175,55,0.3);background:rgba(212,175,55,0.06);color:#e0d8c8;font-size:1em;outline:none;transition:border-color 0.3s;">
+                <input type="text" id="playerJob" placeholder="职业（太白/天香/移花/神威等）"
+                    style="padding:12px 16px;border-radius:8px;border:1px solid rgba(212,175,55,0.3);background:rgba(212,175,55,0.06);color:#e0d8c8;font-size:1em;outline:none;transition:border-color 0.3s;">
+            </div>
+            <textarea id="applyMsg" rows="3" placeholder="自我介绍 / 想对帮主说的话（选填）"
+                style="width:100%;padding:12px 16px;border-radius:8px;border:1px solid rgba(212,175,55,0.3);background:rgba(212,175,55,0.06);color:#e0d8c8;font-size:1em;outline:none;resize:vertical;margin-bottom:14px;font-family:inherit;"></textarea>
+            <button type="submit"
+                style="width:100%;padding:14px;border:none;border-radius:8px;background:linear-gradient(135deg,#d4af37,#b8962a);color:#1a1a2e;font-size:1.1em;font-weight:bold;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;letter-spacing:2px;">
+                ✦ 提交申请 ✦
+            </button>
+        </form>
+        <div id="formFeedback" style="margin-top:12px;text-align:center;font-size:0.95em;min-height:24px;"></div>
+    </section>
+
+    <footer class="footer">
+        <div>⚔ 山河无恙 · 天涯明月刀手游（经典服） ⚔</div>
+        <div class="server-info">服务器：长生剑 · 经典服 · 期待你的加入</div>
+    </footer>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ============================================================
+    // 1. 星空粒子
+    // ============================================================
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let stars = [], width, height;
+    function resizeCanvas() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    function createStars(c) {
+        stars = [];
+        for(let i=0;i<c;i++) stars.push({
+            x: Math.random()*width, y: Math.random()*height,
+            r: Math.random()*1.8+0.3, alpha: Math.random()*0.8+0.2,
+            speed: Math.random()*0.02+0.005,
+            twinkleSpeed: Math.random()*0.008+0.003,
+            phase: Math.random()*Math.PI*2
+        });
+    }
+    createStars(250);
+    function drawStars() {
+        ctx.clearRect(0,0,width,height);
+        const t = Date.now();
+        for(const s of stars) {
+            const tw = 0.5+0.5*Math.sin(t*s.twinkleSpeed+s.phase);
+            const a = s.alpha*tw;
+            ctx.beginPath();
+            ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+            ctx.fillStyle = `rgba(255,255,255,${a})`;
+            ctx.fill();
+            s.y -= s.speed;
+            if(s.y < -5) { s.y = height+5; s.x = Math.random()*width; }
+        }
+        requestAnimationFrame(drawStars);
+    }
+    drawStars();
+    window.addEventListener('resize',()=>{resizeCanvas();createStars(250);});
+
+    // ============================================================
+    // 2. 音乐控制（明月天涯）
+    // ============================================================
+    const musicBtn = document.getElementById('musicBtn');
+    const audio = document.getElementById('bgMusic');
+    let isPlaying = false;
+
+    // 使用网易云外链 - 明月天涯（如果失效尝试替换ID）
+    const musicUrls = [
+        'https://music.163.com/song/media/outer/url?id=489184964.mp3',
+        'https://music.163.com/song/media/outer/url?id=29764564.mp3'
+    ];
+
+    musicBtn.addEventListener('click', function() {
+        if (isPlaying) {
+            audio.pause();
+            musicBtn.textContent = '🎵';
+            musicBtn.classList.remove('playing');
+            isPlaying = false;
+        } else {
+            // 如果音频还没加载，尝试加载
+            if (audio.readyState === 0) {
+                audio.src = musicUrls[0];
+                audio.load();
+            }
+            audio.play().then(() => {
+                musicBtn.textContent = '🎶';
+                musicBtn.classList.add('playing');
+                isPlaying = true;
+            }).catch(e => {
+                // 如果第一个链接失效，尝试第二个
+                if (audio.src.includes(musicUrls[0])) {
+                    audio.src = musicUrls[1];
+                    audio.load();
+                    audio.play().then(() => {
+                        musicBtn.textContent = '🎶';
+                        musicBtn.classList.add('playing');
+                        isPlaying = true;
+                    }).catch(() => {
+                        musicBtn.textContent = '⚠️';
+                        setTimeout(() => { musicBtn.textContent = '🎵'; }, 2000);
+                    });
+                } else {
+                    musicBtn.textContent = '⚠️';
+                    setTimeout(() => { musicBtn.textContent = '🎵'; }, 2000);
+                }
+            });
+        }
+    });
+
+    // 音频结束时自动重置按钮状态
+    audio.addEventListener('ended', function() {
+        musicBtn.textContent = '🎵';
+        musicBtn.classList.remove('playing');
+        isPlaying = false;
+    });
+
+    // ============================================================
+    // 3. 复制按钮
+    // ============================================================
+    document.querySelectorAll('.copy-btn').forEach(btn=>{
+        btn.addEventListener('click',function(){
+            const t=this.dataset.copy;
+            if(!t) return;
+            if(navigator.clipboard&&navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t).then(()=>showCopyFeedback(this,'✅ 已复制')).catch(()=>fallbackCopy(t,this));
+            } else fallbackCopy(t,this);
+        });
+    });
+    function fallbackCopy(t,btn){
+        const ta=document.createElement('textarea');
+        ta.value=t; ta.style.position='fixed'; ta.style.left='-9999px';
+        document.body.appendChild(ta); ta.select();
+        try{document.execCommand('copy');showCopyFeedback(btn,'✅ 已复制')}catch(e){showCopyFeedback(btn,'❌ 复制失败')}
+        document.body.removeChild(ta);
+    }
+    function showCopyFeedback(btn,m){
+        const o=btn.textContent; btn.textContent=m; btn.style.opacity='0.8';
+        setTimeout(()=>{btn.textContent=o;btn.style.opacity='1';},1500);
+    }
+
+    // ============================================================
+    // 4. 表单提交
+    // ============================================================
+    const form=document.getElementById('applyForm');
+    const feedback=document.getElementById('formFeedback');
+    form.addEventListener('submit',function(e){
+        e.preventDefault();
+        const name=document.getElementById('playerName').value.trim();
+        const job=document.getElementById('playerJob').value.trim();
+        const msg=document.getElementById('applyMsg').value.trim();
+        if(!name){
+            feedback.textContent='⚠️ 请填写游戏昵称';
+            feedback.style.color='#ff6b6b'; return;
+        }
+        feedback.style.color='#4ecdc4';
+        let dm=`✅ 申请已提交！${name}少侠（${job||'未知职业'}），帮主 @太黑A 会尽快审核～`;
+        feedback.textContent=dm;
+        form.reset();
+        feedback.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+
+    document.querySelectorAll('input,textarea').forEach(el=>{
+        el.addEventListener('focus',function(){this.style.borderColor='#d4af37';this.style.boxShadow='0 0 12px rgba(212,175,55,0.2)';});
+        el.addEventListener('blur',function(){this.style.borderColor='rgba(212,175,55,0.3)';this.style.boxShadow='none';});
+    });
+
+    console.log('%c山河无恙 · 经典服帮派招人','font-size:24px;color:#d4af37;font-weight:bold;text-shadow:0 0 10px rgba(212,175,55,0.3);');
+    console.log('%c服务器：长生剑（经典服） | 帮主：太黑A | Q群：87654321','font-size:14px;color:#a09070;');
+    console.log('%c江湖路远，山河无恙。欢迎你的加入！','font-size:13px;color:#e0d8c8;font-style:italic;');
+})();
+</script>
+</body>
+</html>
